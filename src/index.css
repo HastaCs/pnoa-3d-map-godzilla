@@ -64,15 +64,19 @@ body {
 }
 
 /* Atribución de MapLibre en clave oscura */
-.maplibregl-ctrl-attrib {
-  background: rgba(19, 20, 14, 0.8) !important;
-  color: var(--color-bone-vellum);
-  font-family: var(--font-jetbrains-mono);
-  font-size: 11px;
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib.maplibregl-compact,
+.maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-inner,
+.maplibregl-ctrl-attrib a,
+.maplibregl-ctrl-attrib a:hover {
+  color: var(--color-bone-vellum) !important;
 }
 
-.maplibregl-ctrl-attrib a {
-  color: var(--color-bone-vellum);
+.maplibregl-ctrl-attrib,
+.maplibregl-ctrl-attrib.maplibregl-compact {
+  background: rgba(19, 20, 14, 0.8) !important;
+  font-family: var(--font-jetbrains-mono);
+  font-size: 11px;
 }
 
 .maplibregl-ctrl-attrib-button {
