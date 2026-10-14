@@ -4,7 +4,7 @@ Visor web de los núcleos urbanos de España (≥50.000 habitantes) con **modelo
 
 La navegación es guiada: se elige una ciudad desde el selector, se explora su inventario de lugares y se vuela hasta cada uno para orbitar alrededor del modelo 3D.
 
-<img width="1512" height="863" alt="image" src="https://github.com/user-attachments/assets/996add7b-292c-4bef-8ae1-434fd591fe22" />
+<img width="1507" height="814" alt="image" src="https://github.com/user-attachments/assets/42243ebf-cb51-4d37-92a3-945e85888ba0" />
 
 ## Demo
 
