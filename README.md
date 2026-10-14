@@ -6,9 +6,7 @@ La navegación es guiada: se elige una ciudad desde el selector, se explora su i
 
 ## Demo
 
-🔗 **https://TU-URL.vercel.app**
-
-<!-- TODO: sustituir por la URL real de despliegue en Vercel -->
+🔗 **https://pnoa-3d-map.vercel.app/**
 
 ## Qué es
 
