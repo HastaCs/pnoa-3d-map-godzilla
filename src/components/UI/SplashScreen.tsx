@@ -45,8 +45,8 @@ export function SplashScreen({ onStart }: SplashScreenProps) {
           PNOA · Inventario 3D
         </span>
 
-        <h1 className="mt-7 text-[36px] leading-[0.95] tracking-[-0.03em] text-bone-vellum sm:text-heading sm:leading-[1.06] lg:text-display lg:leading-[0.9]">
-          Ciudades en tres dimensiones.
+        <h1 className="mt-7 whitespace-nowrap text-[26px] leading-[1] tracking-[-0.03em] text-bone-vellum sm:text-[38px] lg:text-[52px]">
+          PNOA Ciudades 3D
         </h1>
 
         <p className="mt-7 text-[16px] leading-[1.62] tracking-[-0.03em] text-bone-vellum/90 sm:text-body">
