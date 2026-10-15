@@ -42,7 +42,7 @@ export function SplashScreen({ onStart }: SplashScreenProps) {
     >
       <div className="w-full max-w-xl">
         <span className="inline-block font-jetbrains-mono text-caption uppercase tracking-[0.15em] text-obsidian-loam bg-lime-surveyor px-[7px] py-[5px] rounded-md">
-          PNOA · Inventario 3D
+          PNOA · Godzilla 3D
         </span>
 
         <h1 className="mt-7 whitespace-nowrap text-[26px] leading-[1] tracking-[-0.03em] text-bone-vellum sm:text-[38px] lg:text-[52px]">
@@ -52,6 +52,18 @@ export function SplashScreen({ onStart }: SplashScreenProps) {
         <p className="mt-7 text-[16px] leading-[1.62] tracking-[-0.03em] text-bone-vellum/90 sm:text-body">
           Ortofoto de máxima actualidad del IGN/CNIG sobre los modelos 3D del PNOA de los núcleos
           urbanos de España. Los monumentos y edificios singulares provienen de Wikidata y Wikipedia.
+        </p>
+
+        <p className="mt-4 text-[14px] leading-[1.62] text-drift-ash">
+          Este fork del proyecto de menusal añade a Godzilla animado junto al monumento que elijas.{' '}
+          <a
+            href="https://github.com/menusal/pnoa-3d-map"
+            target="_blank"
+            rel="noreferrer"
+            className="text-lime-surveyor underline underline-offset-2 hover:text-marsh-olive"
+          >
+            Visita el proyecto original.
+          </a>
         </p>
 
         <p className="mt-4 flex items-center gap-2 font-jetbrains-mono text-caption uppercase tracking-[0.15em] text-drift-ash">
