@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import type { StyleSpecification } from 'maplibre-gl'
 import { MapLibreOverlay } from '@deck.gl/maplibre'
+import { LightingEffect, AmbientLight, DirectionalLight } from '@deck.gl/core'
+import { ScenegraphLayer } from '@deck.gl/mesh-layers'
 
 // Configurar worker de MapLibre para evitar errores en Vite
 maplibregl.setWorkerUrl(
@@ -29,6 +31,15 @@ const INITIAL_VIEW: ViewState = {
   pitch: 0,
   bearing: 0,
 }
+
+// Iluminación para el modelo GLB de Godzilla (ScenegraphLayer con _lighting: 'pbr')
+const ambientLight = new AmbientLight({ color: [255, 255, 255], intensity: 1.2 })
+const godzillaSunLight = new DirectionalLight({
+  color: [255, 255, 255],
+  intensity: 1.8,
+  direction: [-3, -9, -2],
+})
+const lightingEffect = new LightingEffect({ ambientLight, godzillaSunLight })
 
 const PNOA_STYLE: StyleSpecification = {
   version: 8,
@@ -85,7 +96,7 @@ export function MapContainer({
       pitch: INITIAL_VIEW.pitch,
       bearing: INITIAL_VIEW.bearing,
       maxPitch: 85,
-      maxZoom: 17.5,
+      maxZoom: 22,
       dragPan: false,
       dragRotate: false,
       scrollZoom: false,
@@ -106,6 +117,7 @@ export function MapContainer({
     const overlay = new MapLibreOverlay({
       interleaved: true,
       layers: [],
+      effects: [lightingEffect],
     })
     map.addControl(overlay)
 
@@ -125,6 +137,33 @@ export function MapContainer({
       overlayRef.current = null
     }
   }, [])
+
+  // Cámara libre estilo Google Maps: activa pan, zoom y rotación con el ratón,
+  // pero solo cuando NO hay órbita automática en curso (durante la órbita mandan los frames).
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !mapLoaded) return
+
+    const free = !isOrbiting
+    if (free) {
+      map.dragPan.enable()
+      map.dragRotate.enable()
+      map.scrollZoom.enable()
+      map.doubleClickZoom.enable()
+      map.touchZoomRotate.enable()
+      map.keyboard.enable()
+      map.boxZoom.enable()
+    } else {
+      map.dragPan.disable()
+      map.dragRotate.disable()
+      map.scrollZoom.disable()
+      map.doubleClickZoom.disable()
+      map.touchZoomRotate.disable()
+      map.keyboard.disable()
+      map.boxZoom.disable()
+    }
+    map.getCanvas().style.cursor = free ? 'grab' : ''
+  }, [isOrbiting, mapLoaded])
 
   // Manejar selección de ciudad con animación
   const flyToCity = useCallback((city: City) => {
@@ -261,6 +300,11 @@ export function MapContainer({
     activeTilesetsRef.current.forEach((url) => {
       layers.push(get3DTilesLayer(url, isOrbiting))
     })
+
+    // Invocar a Godzilla junto al edificio que se está viendo
+    if (selectedMonument) {
+      layers.push(createGodzillaLayer(selectedMonument))
+    }
 
     if (monuments.length > 0) {
       layers.push(
@@ -410,6 +454,45 @@ function handleTilesetLoad(tileset: unknown) {
 
 function handleTileError(error: unknown) {
   console.error('Error cargando tile:', error)
+}
+
+// Godzilla: el GLB tiene ~112 unidades de alto en su pose base (Y arriba).
+const GODZILLA_MODEL_HEIGHT = 112
+const GODZILLA_HEIGHT_M = 1040
+const GODZILLA_OFFSET_M = 0
+// El glTF viene con Y hacia arriba; deck.gl trabaja con Z hacia arriba.
+// En ScenegraphLayer el giro que endereza el modelo es el "roll" (3er valor), no el pitch.
+const GODZILLA_ROLL = 90
+const GODZILLA_YAW = 0
+const GODZILLA_ANIMATION_NAME = 'Godzilla, Why are you soo creepy?'
+
+function metersToLon(meters: number, lat: number): number {
+  return meters / (111320 * Math.cos((lat * Math.PI) / 180))
+}
+
+function metersToLat(meters: number): number {
+  return meters / 111320
+}
+
+function createGodzillaLayer(monument: Monument) {
+  const lon = monument.lon + metersToLon(GODZILLA_OFFSET_M, monument.lat)
+  const lat = monument.lat + metersToLat(GODZILLA_OFFSET_M * 0.4)
+
+  return new ScenegraphLayer({
+    id: 'godzilla-layer',
+    data: [monument],
+    scenegraph: `${import.meta.env.BASE_URL}models/godzilla.glb`,
+    sizeScale: GODZILLA_HEIGHT_M / GODZILLA_MODEL_HEIGHT,
+    sizeMinPixels: 0,
+    getPosition: () => [lon, lat, 0],
+    getOrientation: () => [0, GODZILLA_YAW, GODZILLA_ROLL],
+    pickable: false,
+    _lighting: 'pbr',
+    // Reproduce la animación esquelética del glTF (walk/roar).
+    _animations: {
+      [GODZILLA_ANIMATION_NAME]: { playing: true, speed: 1 },
+    },
+  })
 }
 
 interface MonumentsCallbacks {
