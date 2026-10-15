@@ -13,7 +13,7 @@ La navegación es guiada: se elige una ciudad desde el selector, se explora su i
 
 ## Demo
 
-🔗 **https://pnoa-3d-map.vercel.app/**
+🔗 **https://pnoa-3d-map-godzilla.vercel.app/**
 
 ## Qué es
 
