@@ -83,6 +83,8 @@ export function MapContainer({
   const [isOrbiting, setIsOrbiting] = useState(false)
   const [orbitPaused, setOrbitPaused] = useState(false)
   const lastOrbitedMonumentRef = useRef<string | null>(null)
+  const godzillaLayerRef = useRef<any>(null)
+  const godzillaTimeRef = useRef<number | null>(null)
 
   // Inicializar mapa
   useEffect(() => {
@@ -170,6 +172,7 @@ export function MapContainer({
     const map = mapRef.current
     if (!map || !city.center) return
 
+    map.stop() // cancela el easeTo de entrada para que no derive la cámara
     const [lon, lat] = city.center
     map.flyTo({
       center: [lon, lat],
@@ -242,6 +245,7 @@ export function MapContainer({
 
       setOrbitPaused(false)
       stopOrbit()
+      map.stop() // corta cualquier animación de cámara previa antes del vuelo
 
       map.flyTo({
         center: [monument.lon, monument.lat],
@@ -303,7 +307,13 @@ export function MapContainer({
 
     // Invocar a Godzilla junto al edificio que se está viendo
     if (selectedMonument) {
-      layers.push(createGodzillaLayer(selectedMonument))
+      const godzilla = createGodzillaLayer(selectedMonument)
+      godzillaLayerRef.current = godzilla
+      godzillaTimeRef.current = null
+      layers.push(godzilla)
+    } else {
+      godzillaLayerRef.current = null
+      godzillaTimeRef.current = null
     }
 
     if (monuments.length > 0) {
@@ -350,9 +360,25 @@ export function MapContainer({
     const animate = () => {
       const marker = selectedMonumentRef.current
       if (marker && overlayRef.current) {
+        // En modo interleaved MapLibre controla el render y el timeline de deck no
+        // avanza, así que avanzamos el animador del glTF a mano (delta en segundos).
+        const animator = godzillaLayerRef.current?.state?.animator
+        if (animator) {
+          const now = performance.now()
+          const delta = godzillaTimeRef.current === null ? 0 : (now - godzillaTimeRef.current) / 1000
+          godzillaTimeRef.current = now
+          animator.getAnimations?.().forEach((animation: any) => {
+            if (!animation.playing) animation.playing = true
+          })
+          animator.update?.(delta)
+        }
+
         overlayRef.current.setProps({
           layers: [...baseLayersRef.current, ...createMonumentMarkerLayers(marker, performance.now())],
         })
+        // Con la órbita parada MapLibre deja de repintar; forzamos el frame para que
+        // se apliquen la animación del glTF y el pulso del marcador.
+        mapRef.current?.triggerRepaint()
       }
       markerFrameRef.current = requestAnimationFrame(animate)
     }
@@ -464,7 +490,6 @@ const GODZILLA_OFFSET_M = 0
 // En ScenegraphLayer el giro que endereza el modelo es el "roll" (3er valor), no el pitch.
 const GODZILLA_ROLL = 90
 const GODZILLA_YAW = 0
-const GODZILLA_ANIMATION_NAME = 'Godzilla, Why are you soo creepy?'
 
 function metersToLon(meters: number, lat: number): number {
   return meters / (111320 * Math.cos((lat * Math.PI) / 180))
@@ -488,10 +513,6 @@ function createGodzillaLayer(monument: Monument) {
     getOrientation: () => [0, GODZILLA_YAW, GODZILLA_ROLL],
     pickable: false,
     _lighting: 'pbr',
-    // Reproduce la animación esquelética del glTF (walk/roar).
-    _animations: {
-      [GODZILLA_ANIMATION_NAME]: { playing: true, speed: 1 },
-    },
   })
 }
 
